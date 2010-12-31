@@ -8,17 +8,41 @@
 const BlockSize = 8;
 const KeySize = 16;
 
-// CAST5js object constructor
+// CAST5js constructor
 function cast5(key) {
 	this.masking = new Array(16);
 	this.rotate = new Array(16);
 
-	if (key.length() != KeySize) {
+	var bKey = this.Hex2Str(key);
+	if (key.length == KeySize) {
+		this.keySchedule(key);
+	} else if(bKey.length == KeySize) {
+		this.keySchedule(bKey);
+	} else {
 		alert('CAST5: keys must be 16 bytes');
 		return;
 	}
-	this.keySchedule(key);
 	return;	
+}
+                                                                                                                                                 
+// String to hex conversion
+cast5.prototype.Str2Hex = function(s) {
+	var hex = "0123456789abcdef";
+	var r = '';
+
+	for(var i=0; i < s.length; i++) {
+		b = s.charCodeAt(i);
+		r += hex.charAt((b>>>4)&0xf) + hex.charAt(b&0xf);
+	}
+	return r;
+}
+
+// Hex to string conversion
+cast5.prototype.Hex2Str = function(h) {
+	var s = '';
+	for(var i=0; i<h.length; i+=2)
+		s+= String.fromCharCode(parseInt(h.slice(i, i+2), 16));
+	return s;
 }
 
 // reset
@@ -36,8 +60,9 @@ cast5.prototype.BlockSize = function() {
 
 
 cast5.prototype.Encrypt = function(src) {
-    var l = src.charCodeAt(0)<<24 | src.charCodeAt(1)<<16 | src.charCodeAt(2)<<8 | src.charCodeAt(3);
-    var r = src.charCodeAt(4)<<24 | src.charCodeAt(5)<<16 | src.charCodeAt(6)<<8 | src.charCodeAt(7);
+	src = this.Str2Hex(src);
+    var l = src[0]<<24 | src[1]<<16 | src[2]<<8 | src[3];
+    var r = src[4]<<24 | src[5]<<16 | src[6]<<8 | src[7];
 	
 	l = r;
     r = l^f1(r, this.masking[0], this.rotate[0]);
@@ -75,6 +100,7 @@ cast5.prototype.Encrypt = function(src) {
 	l = r;
     r = l^f1(r, this.masking[15], this.rotate[15]);
 
+	var dst = new Array(8);
     dst[0] = r >> 24;
     dst[1] = r >> 16;
     dst[2] = r >> 8;
@@ -87,8 +113,9 @@ cast5.prototype.Encrypt = function(src) {
 }
 
 cast5.prototype.Decrypt = function(src) {
-    var l = src.charCodeAt(0)<<24 | src.charCodeAt(1)<<16 | src.charCodeAt(2)<<8 | src.charCodeAt(3);
-    var r = src.charCodeAt(4)<<24 | src.charCodeAt(5)<<16 | src.charCodeAt(6)<<8 | src.charCodeAt(7);
+	src = this.Str2Hex(src);
+    var l = src[0]<<24 | src[1]<<16 | src[2]<<8 | src[3];
+    var r = src[4]<<24 | src[5]<<16 | src[6]<<8 | src[7];
 
 	l = r;
     r = l^f1(r, this.masking[15], this.rotate[15]);
@@ -126,6 +153,7 @@ cast5.prototype.Decrypt = function(src) {
 	l = r;
     r = l^f1(r, this.masking[0], this.rotate[0]);
 
+	var dst = new Array(8);
     dst[0] = r >> 24;
     dst[1] = r >> 16;
     dst[2] = r >> 8;
@@ -200,7 +228,7 @@ cast5.prototype.keySchedule = function(inn) {
 
     for (var i = 0; i < 4; i++) {
         var j = i * 4;
-        t[i] = inn.charCodeAt(j)<<24 | inn.charCodeAt(j+1)<<16 | inn.charCodeAt(j+2)<<8 | inn.charCodeAt(j+3);
+        t[i] = inn[j]<<24 | inn[j+1]<<16 | inn[j+2]<<8 | inn[j+3];
     }
 
     var x = [6, 7, 4, 5];
@@ -429,7 +457,7 @@ sBox[4] = new Array(
         0xd6cd2595, 0x68ff1ebf, 0x7555442c, 0xf19f06be, 0xf9e0659a, 0xeeb9491d, 0x34010718, 0xbb30cab8,
         0xe822fe15, 0x88570983, 0x750e6249, 0xda627e55, 0x5e76ffa8, 0xb1534546, 0x6d47de08, 0xefe9e7d4
     );
-sBox[4] = new Array(
+sBox[5] = new Array(
         0xf6fa8f9d, 0x2cac6ce1, 0x4ca34867, 0xe2337f7c, 0x95db08e7, 0x016843b4, 0xeced5cbc, 0x325553ac,
         0xbf9f0960, 0xdfa1e2ed, 0x83f0579d, 0x63ed86b9, 0x1ab6a6b8, 0xde5ebe39, 0xf38ff732, 0x8989b138,
         0x33f14961, 0xc01937bd, 0xf506c6da, 0xe4625e7e, 0xa308ea99, 0x4e23e33c, 0x79cbd7cc, 0x48a14367,
