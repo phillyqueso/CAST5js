@@ -13,16 +13,14 @@ function cast5(key) {
 	this.masking = new Array(16);
 	this.rotate = new Array(16);
 
-	var bKey = this.Hex2Str(key);
+	//var bKey = this.Str2Hex(key);
 	if (key.length == KeySize) {
 		this.keySchedule(key);
-	} else if(bKey.length == KeySize) {
-		this.keySchedule(bKey);
 	} else {
 		alert('CAST5: keys must be 16 bytes');
-		return;
+		return false;
 	}
-	return;	
+	return true;
 }
                                                                                                                                                  
 // String to hex conversion
@@ -100,7 +98,7 @@ cast5.prototype.Encrypt = function(src) {
 	l = r;
     r = l^f1(r, this.masking[15], this.rotate[15]);
 
-	var dst = new Array(8);
+	var dst = [];
     dst[0] = r >> 24;
     dst[1] = r >> 16;
     dst[2] = r >> 8;
@@ -109,7 +107,8 @@ cast5.prototype.Encrypt = function(src) {
     dst[5] = l >> 16;
     dst[6] = l >> 8;
     dst[7] = l;
-	return dst.join("");
+	//return dst.join("");
+	return this.Hex2Str(dst);
 }
 
 cast5.prototype.Decrypt = function(src) {
@@ -153,7 +152,7 @@ cast5.prototype.Decrypt = function(src) {
 	l = r;
     r = l^f1(r, this.masking[0], this.rotate[0]);
 
-	var dst = new Array(8);
+	var dst = [];
     dst[0] = r >> 24;
     dst[1] = r >> 16;
     dst[2] = r >> 8;
@@ -162,7 +161,8 @@ cast5.prototype.Decrypt = function(src) {
     dst[5] = l >> 16;
     dst[6] = l >> 8;
     dst[7] = l;
-	return dst.join("");
+	//return dst.join("");
+	return this.Hex2Str(dst);
 }
 
 
