@@ -58,9 +58,9 @@ cast5.prototype.BlockSize = function() {
 
 
 cast5.prototype.Encrypt = function(src) {
-	src = this.Str2Hex(src);
-    var l = src[0]<<24 | src[1]<<16 | src[2]<<8 | src[3];
-    var r = src[4]<<24 | src[5]<<16 | src[6]<<8 | src[7];
+	//src = this.Str2Hex(src);
+    var l = (src[0] >>> 0)<<24 | (src[1] >>> 0)<<16 | (src[2] >>> 0)<<8 | (src[3] >>> 0);
+    var r = (src[4] >>> 0)<<24 | (src[5] >>> 0)<<16 | (src[6] >>> 0)<<8 | (src[7] >>> 0);
 	
 	l = r;
     r = l^f1(r, this.masking[0], this.rotate[0]);
@@ -97,18 +97,19 @@ cast5.prototype.Encrypt = function(src) {
     r = l^f3(r, this.masking[14], this.rotate[14]);
 	l = r;
     r = l^f1(r, this.masking[15], this.rotate[15]);
-
+	
 	var dst = [];
-    dst[0] = r >> 24;
-    dst[1] = r >> 16;
-    dst[2] = r >> 8;
-    dst[3] = r;
-    dst[4] = l >> 24;
-    dst[5] = l >> 16;
-    dst[6] = l >> 8;
-    dst[7] = l;
+    dst[0] = (r >> 24) >>>0;
+    dst[1] = (r >> 16) >>>0;
+    dst[2] = (r >> 8) >>>0;
+    dst[3] = r >>>0;
+    dst[4] = (l >> 24) >>>0;
+    dst[5] = (l >> 16) >>>0;
+    dst[6] = (l >> 8) >>>0;
+    dst[7] = l >>>0;
+	return dst;
 	//return dst.join("");
-	return this.Hex2Str(dst);
+	//return this.Hex2Str(dst);
 }
 
 cast5.prototype.Decrypt = function(src) {
@@ -165,7 +166,6 @@ cast5.prototype.Decrypt = function(src) {
 	return this.Hex2Str(dst);
 }
 
-
 var scheduleA = new Array(4);
 
 scheduleA[0] = new Array(4);
@@ -219,7 +219,8 @@ scheduleB[3] = new Array(4);
 scheduleB[3][0] = new Array(8, 9, 7, 6, 3);
 scheduleB[3][1] = new Array(0xa, 0xb, 5, 4, 7);
 scheduleB[3][2] = new Array(0xc, 0xd, 3, 2, 8);
-scheduleB[3][3] = new Array(0xe, 0xf, 1, 0, 0xd);				
+scheduleB[3][3] = new Array(0xe, 0xf, 1, 0, 0xd);
+
 
 //changed 'in' to 'inn' (in javascript 'in' is a reserved word)
 cast5.prototype.keySchedule = function(inn) {
@@ -239,12 +240,12 @@ cast5.prototype.keySchedule = function(inn) {
             for (var j = 0; j < 4; j++) {
                 var a = scheduleA[round][j];
                 var w = t[a[1]];
-                w ^= sBox[4][(t[a[2]>>2]>>(24-8*(a[2]&3)))&0xff];
+				w ^= sBox[4][(t[a[2]>>2]>>(24-8*(a[2]&3)))&0xff];
                 w ^= sBox[5][(t[a[3]>>2]>>(24-8*(a[3]&3)))&0xff];
                 w ^= sBox[6][(t[a[4]>>2]>>(24-8*(a[4]&3)))&0xff];
                 w ^= sBox[7][(t[a[5]>>2]>>(24-8*(a[5]&3)))&0xff];
                 w ^= sBox[x[j]][(t[a[6]>>2]>>(24-8*(a[6]&3)))&0xff];
-                t[a[0]] = w;
+                t[a[0]] = w >>>0; //make it unsigned
             }
 
             for (var j = 0; j < 4; j++) {
@@ -254,7 +255,7 @@ cast5.prototype.keySchedule = function(inn) {
                 w ^= sBox[6][(t[b[2]>>2]>>(24-8*(b[2]&3)))&0xff];
                 w ^= sBox[7][(t[b[3]>>2]>>(24-8*(b[3]&3)))&0xff];
                 w ^= sBox[4+j][(t[b[4]>>2]>>(24-8*(b[4]&3)))&0xff];
-                k[ki] = w;
+                k[ki] = w >>>0; //make it unsigned
                 ki++;
             }
         }
@@ -271,19 +272,19 @@ cast5.prototype.keySchedule = function(inn) {
 function f1(d, m, r) {
     var t = m + d;
     var I = (t << r) | (t >> (32 - r));
-    return ((sBox[0][I>>24] ^ sBox[1][(I>>16)&0xff]) - sBox[2][(I>>8)&0xff]) + sBox[3][I&0xff];
+    return (((sBox[0][I>>24] ^ sBox[1][(I>>16)&0xff]) - sBox[2][(I>>8)&0xff]) + sBox[3][I&0xff]) >>>0;
 }
 
 function f2(d, m, r) {
     var t = m ^ d;
     var I = (t << r) | (t >> (32 - r));
-    return ((sBox[0][I>>24] - sBox[1][(I>>16)&0xff]) + sBox[2][(I>>8)&0xff]) ^ sBox[3][I&0xff];
+    return (((sBox[0][I>>24] - sBox[1][(I>>16)&0xff]) + sBox[2][(I>>8)&0xff]) ^ sBox[3][I&0xff]) >>>0;
 }
 
 function f3(d, m, r) {
     var t = m - d;
     var I = (t << r) | (t >> (32 - r));
-    return ((sBox[0][I>>24] + sBox[1][(I>>16)&0xff]) ^ sBox[2][(I>>8)&0xff]) - sBox[3][I&0xff];
+    return (((sBox[0][I>>24] + sBox[1][(I>>16)&0xff]) ^ sBox[2][(I>>8)&0xff]) - sBox[3][I&0xff]) >>>0;
 }
 
 var sBox = new Array(8);
