@@ -22,26 +22,6 @@ function cast5(key) {
 	}
 	return true;
 }
-                                                                                                                                                 
-// String to hex conversion
-cast5.prototype.Str2Hex = function(s) {
-	var hex = "0123456789abcdef";
-	var r = '';
-
-	for(var i=0; i < s.length; i++) {
-		b = s.charCodeAt(i);
-		r += hex.charAt((b>>>4)&0xf) + hex.charAt(b&0xf);
-	}
-	return r;
-}
-
-// Hex to string conversion
-cast5.prototype.Hex2Str = function(h) {
-	var s = '';
-	for(var i=0; i<h.length; i+=2)
-		s+= String.fromCharCode(parseInt(h.slice(i, i+2), 16));
-	return s;
-}
 
 // reset
 cast5.prototype.Reset = function() {
@@ -58,9 +38,11 @@ cast5.prototype.BlockSize = function() {
 
 
 cast5.prototype.Encrypt = function(src) {
-	//src = this.Str2Hex(src);
-    var l = (src[0] >>> 0)<<24 | (src[1] >>> 0)<<16 | (src[2] >>> 0)<<8 | (src[3] >>> 0);
-    var r = (src[4] >>> 0)<<24 | (src[5] >>> 0)<<16 | (src[6] >>> 0)<<8 | (src[7] >>> 0);
+    var l = src[0]<<24 | src[1]<<16 | src[2]<<8 | src[3];
+    var r = src[4]<<24 | src[5]<<16 | src[6]<<8 | src[7];
+
+    //var l = src.charCodeAt(0)<<24 | src.charCodeAt(1)<<16 | src.charCodeAt(2)<<8 | src.charCodeAt(3);
+    //var r = src.charCodeAt(4)<<24 | src.charCodeAt(5)<<16 | src.charCodeAt(6)<<8 | src.charCodeAt(7);
 	
 	l = r;
     r = l^f1(r, this.masking[0], this.rotate[0]);
@@ -98,15 +80,18 @@ cast5.prototype.Encrypt = function(src) {
 	l = r;
     r = l^f1(r, this.masking[15], this.rotate[15]);
 	
+	l >>> 0;
+	r >>> 0;
+		
 	var dst = [];
-    dst[0] = (r >> 24) >>>0;
-    dst[1] = (r >> 16) >>>0;
-    dst[2] = (r >> 8) >>>0;
-    dst[3] = r >>>0;
-    dst[4] = (l >> 24) >>>0;
-    dst[5] = (l >> 16) >>>0;
-    dst[6] = (l >> 8) >>>0;
-    dst[7] = l >>>0;
+    dst[0] = (r >> 24) % 256;
+    dst[1] = (r >> 16) % 256;
+    dst[2] = (r >> 8) % 256;
+    dst[3] = r % 256;
+    dst[4] = (l >> 24) % 256;
+    dst[5] = (l >> 16) % 256;
+    dst[6] = (l >> 8) % 256;
+    dst[7] = l % 256;
 	return dst;
 	//return dst.join("");
 	//return this.Hex2Str(dst);
