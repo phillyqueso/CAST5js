@@ -8,12 +8,14 @@
 const BlockSize = 8;
 const KeySize = 16;
 
-// CAST5js constructor
+// CAST5 constructor
+
 function cast5(key) {
 	this.masking = new Array(16);
 	this.rotate = new Array(16);
 
-	//var bKey = this.Str2Hex(key);
+	this.Reset();
+	
 	if (key.length == KeySize) {
 		this.keySchedule(key);
 	} else {
@@ -23,7 +25,8 @@ function cast5(key) {
 	return true;
 }
 
-// reset
+// Reset
+
 cast5.prototype.Reset = function() {
 	for (var i = 0; i < 16; i++) {
         this.masking[i] = 0;
@@ -39,116 +42,78 @@ cast5.prototype.BlockSize = function() {
 
 cast5.prototype.Encrypt = function(src) {
     var l = src[0]<<24 | src[1]<<16 | src[2]<<8 | src[3];
-    var r = src[4]<<24 | src[5]<<16 | src[6]<<8 | src[7];
-
-    //var l = src.charCodeAt(0)<<24 | src.charCodeAt(1)<<16 | src.charCodeAt(2)<<8 | src.charCodeAt(3);
-    //var r = src.charCodeAt(4)<<24 | src.charCodeAt(5)<<16 | src.charCodeAt(6)<<8 | src.charCodeAt(7);
+	var r = src[4]<<24 | src[5]<<16 | src[6]<<8 | src[7];
+	var t;
 	
-	l = r;
-    r = l^f1(r, this.masking[0], this.rotate[0]);
-	l = r;
-    r = l^f2(r, this.masking[1], this.rotate[1]);
-	l = r;
-    r = l^f3(r, this.masking[2], this.rotate[2]);
-	l = r;
-    r = l^f1(r, this.masking[3], this.rotate[3]);
-
-	l = r;
-    r = l^f2(r, this.masking[4], this.rotate[4]);
-	l = r;
-    r = l^f3(r, this.masking[5], this.rotate[5]);
-	l = r;
-    r = l^f1(r, this.masking[6], this.rotate[6]);
-	l = r;
-    r = l^f2(r, this.masking[7], this.rotate[7]);
-
-	l = r;
-    r = l^f3(r, this.masking[8], this.rotate[8]);
-	l = r;
-    r = l^f1(r, this.masking[9], this.rotate[9]);
-	l = r;
-    r = l^f2(r, this.masking[10], this.rotate[10]);
-	l = r;
-    r = l^f3(r, this.masking[11], this.rotate[11]);
-
-	l = r;
-    r = l^f1(r, this.masking[12], this.rotate[12]);
-	l = r;
-    r = l^f2(r, this.masking[13], this.rotate[13]);
-	l = r;
-    r = l^f3(r, this.masking[14], this.rotate[14]);
-	l = r;
-    r = l^f1(r, this.masking[15], this.rotate[15]);
+	t = r; r = l^f1(r, this.masking[0], this.rotate[0]); l = t;
+	t = r; r = l^f2(r, this.masking[1], this.rotate[1]); l = t;
+	t = r; r = l^f3(r, this.masking[2], this.rotate[2]); l = t;
+	t = r; r = l^f1(r, this.masking[3], this.rotate[3]); l = t;
 	
-	l >>> 0;
-	r >>> 0;
-		
+	t = r; r = l^f2(r, this.masking[4], this.rotate[4]); l = t;
+	t = r; r = l^f3(r, this.masking[5], this.rotate[5]); l = t;
+	t = r; r = l^f1(r, this.masking[6], this.rotate[6]); l = t;
+	t = r; r = l^f2(r, this.masking[7], this.rotate[7]); l = t;
+	
+	t = r; r = l^f3(r, this.masking[8], this.rotate[8]); l = t;
+	t = r; r = l^f1(r, this.masking[9], this.rotate[9]); l = t;
+	t = r; r = l^f2(r, this.masking[10], this.rotate[10]); l = t;
+	t = r; r = l^f3(r, this.masking[11], this.rotate[11]); l = t;
+	
+	t = r; r = l^f1(r, this.masking[12], this.rotate[12]); l = t;
+	t = r; r = l^f2(r, this.masking[13], this.rotate[13]); l = t;
+	t = r; r = l^f3(r, this.masking[14], this.rotate[14]); l = t;
+	t = r; r = l^f1(r, this.masking[15], this.rotate[15]); l = t;
+	
 	var dst = [];
-    dst[0] = (r >> 24) % 256;
-    dst[1] = (r >> 16) % 256;
-    dst[2] = (r >> 8) % 256;
-    dst[3] = r % 256;
-    dst[4] = (l >> 24) % 256;
-    dst[5] = (l >> 16) % 256;
-    dst[6] = (l >> 8) % 256;
-    dst[7] = l % 256;
+	dst[0] = (r >>> 24)&255;
+	dst[1] = (r >>> 16)&255;
+	dst[2] = (r >>> 8)&255;
+	dst[3] = r&255;
+	dst[4] = (l >>> 24)&255;
+	dst[5] = (l >>> 16)&255;
+	dst[6] = (l >>> 8)&255;
+	dst[7] = l&255;
+	
 	return dst;
-	//return dst.join("");
-	//return this.Hex2Str(dst);
 }
 
 cast5.prototype.Decrypt = function(src) {
-	src = this.Str2Hex(src);
-    var l = src[0]<<24 | src[1]<<16 | src[2]<<8 | src[3];
-    var r = src[4]<<24 | src[5]<<16 | src[6]<<8 | src[7];
-
-	l = r;
-    r = l^f1(r, this.masking[15], this.rotate[15]);
-	l = r;
-    r = l^f3(r, this.masking[14], this.rotate[14]);
-	l = r;
-	r = l^f2(r, this.masking[13], this.rotate[13]);
-	l = r;
-    r = l^f1(r, this.masking[12], this.rotate[12]);
-
-	l = r;
-    r = l^f3(r, this.masking[11], this.rotate[11]);
-	l = r;
-	r = l^f2(r, this.masking[10], this.rotate[10]);
-	l = r;
-    r = l^f1(r, this.masking[9], this.rotate[9]);
-	l = r;
-    r = l^f3(r, this.masking[8], this.rotate[8]);
-
-	l = r;
-    r = l^f2(r, this.masking[7], this.rotate[7]);
-	l = r;
-    r = l^f1(r, this.masking[6], this.rotate[6]);
-	l = r;
-    r = l^f3(r, this.masking[5], this.rotate[5]);
-	l = r;
-    r = l^f2(r, this.masking[4], this.rotate[4]);
-
-	l = r;
-    r = l^f1(r, this.masking[3], this.rotate[3]);
-	l = r;
-    r = l^f3(r, this.masking[2], this.rotate[2]);
-	l = r;
-    r = l^f2(r, this.masking[1], this.rotate[1]);
-	l = r;
-    r = l^f1(r, this.masking[0], this.rotate[0]);
-
+	var l = src[0]<<24 | src[1]<<16 | src[2]<<8 | src[3];
+	var r = src[4]<<24 | src[5]<<16 | src[6]<<8 | src[7];
+	var t;
+	
+	t = r; r = l^f1(r, this.masking[15], this.rotate[15]); l = t;
+	t = r; r = l^f3(r, this.masking[14], this.rotate[14]); l = t;
+	t = r; r = l^f2(r, this.masking[13], this.rotate[13]); l = t;
+	t = r; r = l^f1(r, this.masking[12], this.rotate[12]); l = t;
+	
+	t = r; r = l^f3(r, this.masking[11], this.rotate[11]); l = t;
+	t = r; r = l^f2(r, this.masking[10], this.rotate[10]); l = t;
+	t = r; r = l^f1(r, this.masking[9], this.rotate[9]); l = t;
+	t = r; r = l^f3(r, this.masking[8], this.rotate[8]); l = t;
+	
+	t = r; r = l^f2(r, this.masking[7], this.rotate[7]); l = t;
+	t = r; r = l^f1(r, this.masking[6], this.rotate[6]); l = t;
+	t = r; r = l^f3(r, this.masking[5], this.rotate[5]); l = t;
+	t = r; r = l^f2(r, this.masking[4], this.rotate[4]); l = t;
+	
+	t = r; r = l^f1(r, this.masking[3], this.rotate[3]); l = t;
+	t = r; r = l^f3(r, this.masking[2], this.rotate[2]); l = t;
+	t = r; r = l^f2(r, this.masking[1], this.rotate[1]); l = t;
+	t = r; r = l^f1(r, this.masking[0], this.rotate[0]); l = t;
+	
 	var dst = [];
-    dst[0] = r >> 24;
-    dst[1] = r >> 16;
-    dst[2] = r >> 8;
-    dst[3] = r;
-    dst[4] = l >> 24;
-    dst[5] = l >> 16;
-    dst[6] = l >> 8;
-    dst[7] = l;
-	//return dst.join("");
-	return this.Hex2Str(dst);
+	dst[0] = (r >>> 24)&255;
+	dst[1] = (r >>> 16)&255;
+	dst[2] = (r >>> 8)&255;
+	dst[3] = r&255;
+	dst[4] = (l >>> 24)&255;
+	dst[5] = (l >> 16)&255;
+	dst[6] = (l >> 8)&255;
+	dst[7] = l&255;
+	
+	return dst;
 }
 
 var scheduleA = new Array(4);
@@ -210,66 +175,67 @@ scheduleB[3][3] = new Array(0xe, 0xf, 1, 0, 0xd);
 //changed 'in' to 'inn' (in javascript 'in' is a reserved word)
 cast5.prototype.keySchedule = function(inn) {
     var t = new Array(8);
-    var k = new Array(32);
-
-    for (var i = 0; i < 4; i++) {
-        var j = i * 4;
-        t[i] = inn[j]<<24 | inn[j+1]<<16 | inn[j+2]<<8 | inn[j+3];
-    }
-
-    var x = [6, 7, 4, 5];
-    var ki = 0;
-
-    for (var half = 0; half < 2; half++) {
-        for (var round = 0; round < 4; round++) {
-            for (var j = 0; j < 4; j++) {
-                var a = scheduleA[round][j];
-                var w = t[a[1]];
-				w ^= sBox[4][(t[a[2]>>2]>>(24-8*(a[2]&3)))&0xff];
-                w ^= sBox[5][(t[a[3]>>2]>>(24-8*(a[3]&3)))&0xff];
-                w ^= sBox[6][(t[a[4]>>2]>>(24-8*(a[4]&3)))&0xff];
-                w ^= sBox[7][(t[a[5]>>2]>>(24-8*(a[5]&3)))&0xff];
-                w ^= sBox[x[j]][(t[a[6]>>2]>>(24-8*(a[6]&3)))&0xff];
-                t[a[0]] = w >>>0; //make it unsigned
-            }
-
-            for (var j = 0; j < 4; j++) {
-                var b = scheduleB[round][j];
-                var w = sBox[4][(t[b[0]>>2]>>(24-8*(b[0]&3)))&0xff];
-                w ^= sBox[5][(t[b[1]>>2]>>(24-8*(b[1]&3)))&0xff];
-                w ^= sBox[6][(t[b[2]>>2]>>(24-8*(b[2]&3)))&0xff];
-                w ^= sBox[7][(t[b[3]>>2]>>(24-8*(b[3]&3)))&0xff];
-                w ^= sBox[4+j][(t[b[4]>>2]>>(24-8*(b[4]&3)))&0xff];
-                k[ki] = w >>>0; //make it unsigned
-                ki++;
-            }
-        }
-    }
-
-    for (var i = 0; i < 16; i++) {
-        this.masking[i] = k[i];
-        this.rotate[i] = k[16+i] & 0x1f;
-    }
+	var k = new Array(32);
+	
+	for (var i = 0; i < 4; i++) {
+		var j = i * 4;
+		t[i] = inn[j]<<24 | inn[j+1]<<16 | inn[j+2]<<8 | inn[j+3];
+	}
+	
+	var x = [6, 7, 4, 5];
+	var ki = 0;
+	
+	for (var half = 0; half < 2; half++) {
+		for (var round = 0; round < 4; round++) {
+			for (var j = 0; j < 4; j++) {
+				var a = scheduleA[round][j];
+				var w = t[a[1]];
+				
+				w ^= sBox[4][(t[a[2]>>>2]>>>(24-8*(a[2]&3)))&0xff];
+				w ^= sBox[5][(t[a[3]>>>2]>>>(24-8*(a[3]&3)))&0xff];
+				w ^= sBox[6][(t[a[4]>>>2]>>>(24-8*(a[4]&3)))&0xff];
+				w ^= sBox[7][(t[a[5]>>>2]>>>(24-8*(a[5]&3)))&0xff];
+				w ^= sBox[x[j]][(t[a[6]>>>2]>>>(24-8*(a[6]&3)))&0xff];
+				t[a[0]] = w;
+			}
+			
+			for (var j = 0; j < 4; j++) {
+				var b = scheduleB[round][j];
+				var w = sBox[4][(t[b[0]>>>2]>>(24-8*(b[0]&3)))&0xff];
+				w ^= sBox[5][(t[b[1]>>>2]>>>(24-8*(b[1]&3)))&0xff];
+				w ^= sBox[6][(t[b[2]>>>2]>>>(24-8*(b[2]&3)))&0xff];
+				w ^= sBox[7][(t[b[3]>>>2]>>>(24-8*(b[3]&3)))&0xff];
+				w ^= sBox[4+j][(t[b[4]>>>2]>>>(24-8*(b[4]&3)))&0xff];
+				k[ki] = w;
+				ki++;
+			}
+		}
+	}
+	
+	for (var i = 0; i < 16; i++) {
+		this.masking[i] = k[i];
+		this.rotate[i] = k[16+i] & 0x1f;
+	}
 }
 
 
 // These are the three 'f' functions. See RFC 2144, section 2.2.
 function f1(d, m, r) {
     var t = m + d;
-    var I = (t << r) | (t >> (32 - r));
-    return (((sBox[0][I>>24] ^ sBox[1][(I>>16)&0xff]) - sBox[2][(I>>8)&0xff]) + sBox[3][I&0xff]) >>>0;
+    var I = (t << r) | (t >>> (32 - r));
+    return ((sBox[0][I>>>24] ^ sBox[1][(I>>>16)&255]) - sBox[2][(I>>>8)&255]) + sBox[3][I&255];
 }
 
 function f2(d, m, r) {
     var t = m ^ d;
-    var I = (t << r) | (t >> (32 - r));
-    return (((sBox[0][I>>24] - sBox[1][(I>>16)&0xff]) + sBox[2][(I>>8)&0xff]) ^ sBox[3][I&0xff]) >>>0;
+    var I = (t << r) | (t >>> (32 - r));
+    return ((sBox[0][I>>>24] - sBox[1][(I>>>16)&255]) + sBox[2][(I>>>8)&255]) ^ sBox[3][I&255];
 }
 
 function f3(d, m, r) {
     var t = m - d;
-    var I = (t << r) | (t >> (32 - r));
-    return (((sBox[0][I>>24] + sBox[1][(I>>16)&0xff]) ^ sBox[2][(I>>8)&0xff]) - sBox[3][I&0xff]) >>>0;
+    var I = (t << r) | (t >>> (32 - r));
+    return ((sBox[0][I>>>24] + sBox[1][(I>>>16)&255]) ^ sBox[2][(I>>>8)&255]) - sBox[3][I&255];
 }
 
 var sBox = new Array(8);
