@@ -1,3 +1,3 @@
 CAST5js implements cast5 in javascript as defined in RFC 2144. CAST5 is a common OpenPGP cipher.
 
-Porting http://golang.org/src/pkg/crypto/cast5/cast5.go (only good example I could find) to javascript for use with Dr. Hanewinkel's http://www.hanewin.net/encrypt/ openPGP javascript suite.
+Porting http://golang.org/src/pkg/crypto/cast5/cast5.go (only good example I could find) to javascript for use with Dr. Hanewinkel's http://home.arcor.de/hanewin/encrypt/ openPGP javascript suite.
